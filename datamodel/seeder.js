@@ -1,24 +1,23 @@
-const List = require('./list')
-const Item = require(`./item`)
+const Anime = require('./anime')
+const UserAccount = require(`./useraccount`)
 
-module.exports = (listService, itemService) => {
+module.exports = (animeService, userAccountService) => {
+    const inserted=()=>{
+        userAccountService.insert("User1", "azerty")
+            .then(_ => userAccountService.dao.getByLogin("user1@example.com"))
+            .then(ret=>console.log(ret))//if ret===undefined -> login absent
+
+
+    }
     return new Promise(async (resolve, reject) => {
         try {
-            let idItem = 0
-            await listService.dao.create()
-            await itemService.dao.create()
-            for (let i = 0; i < 5; i++) {
-                await listService.dao.insert(new List(i,"Shop" + i,
-                    new Date(+(new Date()) - Math.floor(Math.random() * 10000000000)),
-                    true))
-                for (let iItem = 0; iItem < Math.floor(Math.random() * 10); iItem++) {
-                    await itemService.dao.insert(new Item(idItem, "Label" + iItem,
-                        Math.floor(Math.random() * 20), true, i + 1))
-                    idItem++
-                }
-            }
+            await animeService.dao.create()
+            await userAccountService.dao.create()
+            inserted()
+            resolve()
         } catch (e) {
             if (e.code === "42P07") { // TABLE ALREADY EXISTS https://www.postgresql.org/docs/8.2/errcodes-appendix.html
+                inserted()
                 resolve()
             } else {
                 reject(e)
