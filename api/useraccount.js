@@ -1,43 +1,55 @@
 module.exports = (app, svc, jwt) => {
-    app.post('/useraccount/authenticate', (req, res) => {
-        const { login, password } = req.body
+
+    app.post('/useraccount/authenticate', async (req, res) => {
+        const {login, password} = req.body
         if ((login === undefined) || (password === undefined)) {
-            res.status(400).end()
-            return
+            return res.status(400).end()
         }
         svc.validatePassword(login, password)
-            .then(authenticated => {
-                if (!authenticated) {
+            .then(user => {
+                if (user == null) {
                     res.status(401).end()
                     return
                 }
-                res.json({'login':login, 'token': jwt.generateJWT(login)})
+                console.log(`${user.login} authenticated`)
+                return res.json({
+                    'login' : user.login,
+                    'token': jwt.generateJWT(login)
+                })
             })
             .catch(e => {
                 console.log(e)
-                res.status(500).end()
+                return res.status(500).end()
             })
     })
+
     app.post('/useraccount', async (req, res) => {
-        const { login, password } = req.body
+        const {login, password} = req.body
         if ((login === undefined) || (password === undefined)) {
-            res.status(400).end()
-            return
+            console.log(req.body);
+            return res.status(400).end()
         }
-        let isLogin = await svc.dao.getByLogin(login)
-        svc.insert(login, password).then(_ => res.status(200).end())
+        const user = await svc.get(login)
+        if (user != null) {
+            return res.status(400).end()
+        }
+        svc.insert(login, password)
+            .then(res.status(200).end())
             .catch(e => {
                 console.log(e)
-                res.status(500).end()
+                return res.status(500).end()
             })
     })
-    app.get('/useraccount/:login', async (req, res) => {
-        try {
-            const userAccount = await svc.dao.getByLogin(req.params.login)
-            if (userAccount === undefined) {
-                return res.status(404).end()
-            }
-            return res.json(userAccount)
-        } catch (e) { res.status(400).end() }
+
+    app.get("/useraccount/refreshtoken", jwt.validateJWT, (req, res) => {
+        res.json({'token': jwt.generateJWT(req.user.login)})
+    })
+    app.get("/",(req,res)=>{
+        console.log("get")
+        res.json()
+    })
+
+    app.get("/useraccount/:login", async (req, res) => {
+        return res.status(await svc.get(req.params.login) == null ? 404 : 200).end()
     })
 }

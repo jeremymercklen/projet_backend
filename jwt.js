@@ -6,22 +6,25 @@ module.exports = (userAccountService) => {
     return {
         validateJWT(req, res, next) {
             if (req.headers.authorization === undefined) {
-                res.status(401).end()
-                return
+                return res.status(401).end()
             }
-            const token = req.headers.authorization.split(" ")[1];
+            if (!req.headers.authorization.startsWith("Bearer ")) {
+                return res.status(400).end()
+            }
+            const token = req.headers.authorization.split(" ")[1]
             jwt.verify(token, jwtKey, {algorithm: "HS256"},  async (err, user) => {
                 if (err) {
-                    res.status(401).end()
-                    return
+                    return res.status(401).end()
                 }
-                console.log(user)
                 try {
                     req.user = await userAccountService.dao.getByLogin(user.login)
+                    if (req.user == null) {
+                        return res.status(401).end()
+                    }
                     return next()
                 } catch(e) {
                     console.log(e)
-                    res.status(401).end()
+                    return res.status(401).end()
                 }
 
             })

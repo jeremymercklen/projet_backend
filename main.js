@@ -1,6 +1,7 @@
 const pg = require('pg')
 const express = require('express')
 const bodyParser = require('body-parser')
+const cookieParser=require('cookie-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 
@@ -12,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false })) // URLEncoded form data
 app.use(bodyParser.json()) // application/json
 app.use(cors())
 app.use(morgan('dev')); // toutes les requêtes HTTP dans le log du serveur
+app.use(cookieParser())
 
 const connectionString = "postgres://tp_sql_user:azerty@localhost:5432/tp_sql"
 const db = new pg.Pool({ connectionString: connectionString })
