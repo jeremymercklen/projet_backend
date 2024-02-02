@@ -25,15 +25,19 @@ module.exports = (app, svc, jwt) => {
             return
         }
         let isLogin = await svc.dao.getByLogin(login)
-        if(isLogin !== undefined)
-        {
-            res.status(501).end()
-            return
-        }
         svc.insert(login, password).then(_ => res.status(200).end())
             .catch(e => {
                 console.log(e)
                 res.status(500).end()
             })
+    })
+    app.get('/useraccount/:login', async (req, res) => {
+        try {
+            const userAccount = await svc.dao.getByLogin(req.params.login)
+            if (userAccount === undefined) {
+                return res.status(404).end()
+            }
+            return res.json(userAccount)
+        } catch (e) { res.status(400).end() }
     })
 }
