@@ -42,7 +42,7 @@ module.exports = (app, svc, jwt) => {
     })
 
     app.get("/useraccount/refreshtoken", jwt.validateJWT, (req, res) => {
-        res.json({'token': jwt.generateJWT(req.user.login)})
+        res.json({'id': req.user.id, 'token': jwt.generateJWT(req.user.login)})
     })
     app.get("/",(req,res)=>{
         console.log("get")

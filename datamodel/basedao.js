@@ -6,11 +6,10 @@ module.exports = class BaseDAO {
     delete(id) {
         return this.db.query(`DELETE FROM ${this.tablename} WHERE id=$1`, [id])
     }
-    getById(id) {
+
+    getByIdAPI(id, idAPI) {
         return new Promise((resolve, reject) =>
-            this.db.query(`SELECT * FROM ${this.tablename} WHERE id=$1`, [ id ])
-                .then(res => resolve(res.rows[0]) )
-                .catch(e => reject(e)))
+        this.db.query(`SELECT * FROM ${this.tablename} WHERE (id=$1 AND idapi=$2)`, [id, idAPI]))
     }
 
     getAll() {
