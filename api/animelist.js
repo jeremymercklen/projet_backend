@@ -1,20 +1,20 @@
-module.exports = (app, animeService, jwt) => {
+module.exports = (app, animeListService, jwt) => {
     app.get("/anime", jwt.validateJWT, async (req, res) => {
         const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.has('id') && queryParams.has('idapi')) {
-            res.json(await animeService.dao.getByIdAPI(queryParams.get('id'), queryParams.get('idapi')));
+            res.json(await animeListService.dao.getByIdAPI(queryParams.get('id'), queryParams.get('idapi')));
         }
         else
-            res.json(await animeService.dao.getAll(req.user))
+            res.json(await animeListService.dao.getAll(req.user))
     })
     app.post("/anime", jwt.validateJWT, (req, res) => {
         const anime = req.body
-        if (!animeService.isValid(anime))  {
+        if (!animeListService.isValid(anime))  {
             res.status(400).end()
             return
         }
         anime.useraccount_id = req.user.id
-        animeService.dao.insert(anime)
+        animeListService.dao.insert(anime)
             .then(_ => res.status(200).end())
             .catch(e => {
                 console.log(e)
@@ -23,14 +23,14 @@ module.exports = (app, animeService, jwt) => {
     })
     app.delete("/anime/:id", jwt.validateJWT, async (req, res) => {
         try {
-            const anime = await animeService.dao.getById(req.params.id)
+            const anime = await animeListService.dao.getById(req.params.id)
             if (anime === undefined) {
                 return res.status(404).end()
             }
             if (anime.useraccount_id !== req.user.id) {
                 return res.status(403).end()
             }
-            animeService.dao.delete(req.params.id)
+            animeListService.dao.delete(req.params.id)
                 .then(_ => res.status(200).end())
                 .catch(e => {
                     console.log(e)
@@ -52,7 +52,7 @@ module.exports = (app, animeService, jwt) => {
         if (prevAnime.useraccount_id !== req.user.id) {
             return res.status(403).end()
         }
-        animeService.dao.update(anime)
+        animeListService.dao.update(anime)
             .then(_ => res.status(200).end())
             .catch(e => {
                 console.log(e)

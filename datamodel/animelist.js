@@ -1,4 +1,4 @@
-module.exports = class Anime {
+module.exports = class AnimeList {
     constructor(id, idAPI, state, rating, numberOfEpisodesSeen, isFavorite, userId) {
         this.id = id
         this.idAPI = idAPI

@@ -1,4 +1,4 @@
-const Anime = require('./anime')
+const Anime = require('./animelist')
 const UserAccount = require(`./useraccount`)
 
 module.exports = (animeService, userAccountService) => {
