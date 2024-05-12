@@ -1,0 +1,20 @@
+version: '3.1'
+services:
+  postgresql:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: MABD
+      POSTGRES_USER: MONUSERNAME
+      POSTGRES_PASSWORD: MONMOTDEPASSE
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+volumes:
+  data:
+networks:
+  app-network:
+    driver: bridge

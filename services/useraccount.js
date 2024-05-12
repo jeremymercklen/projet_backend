@@ -9,8 +9,10 @@ module.exports = class UserAccountService {
     hashPassword(password) {
         return bcrypt.hashSync(password, 10)  // 10 : cost factor -> + élevé = hash + sûr
     }
-    insert(login, password) {
-        return this.dao.insert(new UserAccount(login, this.hashPassword(password)))
+    async insert(login, password) {
+        var response = await this.get(login)
+        if (response === undefined)
+            return this.dao.insert(new UserAccount(login, this.hashPassword(password)))
     }
     get(login) {
         return this.dao.getByLogin(login)

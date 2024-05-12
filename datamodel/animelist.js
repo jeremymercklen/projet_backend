@@ -1,7 +1,7 @@
 module.exports = class AnimeList {
     constructor(id, idAPI, state, rating, numberOfEpisodesSeen, isFavorite, userId) {
         this.id = id
-        this.idAPI = idAPI
+        this.idAnime = idAnime
         this.state = state
         this.rating = rating
         this.numberOfEpisodesSeen = numberOfEpisodesSeen

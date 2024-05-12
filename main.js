@@ -5,8 +5,12 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 
-const AnimeService = require("./services/animelist.js")
+const AnimeService = require("./services/anime.js")
 const UserAccountService = require("./services/useraccount.js")
+const AnimeListService = require("./services/animelist.js")
+const GenreService = require("./services/genre.js")
+
+require('dotenv').config();
 
 const app = express()
 app.use(bodyParser.urlencoded({extended: false})) // URLEncoded form data
@@ -21,11 +25,18 @@ console.log(`Using database ${dsn}`)
 const db = new pg.Pool({connectionString: dsn})
 const animeService = new AnimeService(db)
 const userAccountService = new UserAccountService(db)
+const animeListService = new AnimeListService(db)
+const genreService = new GenreService(db)
 const jwt = require('./jwt')(userAccountService)
-require('./api/animelist')(app, animeService, jwt)
+require('./api/anime')(app, animeService, genreService, jwt)
 require('./api/useraccount')(app, userAccountService, jwt)
-require('./datamodel/seeder')(animeService, userAccountService)
-    .then(app.listen(port, () =>
-        console.log(`Listening on the port ${port}`)))
-
-
+require('./api/animelist')(app, animeListService, jwt)
+const seedDatabase = async () => require('./datamodel/seeder')(animeService, userAccountService, animeListService, genreService)
+if (require.main === module) {
+    seedDatabase().then( () =>
+        app.listen(port, () =>
+            console.log(`Listening on the port ${port}`)
+        )
+    )
+}
+module.exports = { app, seedDatabase, userAccountService }
