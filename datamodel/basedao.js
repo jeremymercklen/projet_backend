@@ -1,3 +1,4 @@
+const {reject} = require("bcrypt/promises");
 module.exports = class BaseDAO {
     constructor(db, tablename) {
         this.db = db
@@ -6,12 +7,12 @@ module.exports = class BaseDAO {
     delete(id) {
         return this.db.query(`DELETE FROM ${this.tablename} WHERE id=$1`, [id])
     }
-
-    getByIdAPI(id, idAPI) {
+    getById(id) {
         return new Promise((resolve, reject) =>
-        this.db.query(`SELECT * FROM ${this.tablename} WHERE (id=$1 AND idapi=$2)`, [id, idAPI]))
+            this.db.query(`SELECT * FROM ${this.tablename} WHERE id=$1`, [id])
+                .then(res => resolve(res))
+                .catch(e => reject(e)))
     }
-
     getAll() {
         return new Promise((resolve, reject) =>
             this.db.query(`SELECT * FROM ${this.tablename}`)

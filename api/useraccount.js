@@ -29,6 +29,7 @@ module.exports = (app, svc, jwt) => {
             console.log(req.body);
             return res.status(400).end()
         }
+
         const user = await svc.get(login)
         if (user != null) {
             return res.status(400).end()
