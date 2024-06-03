@@ -43,10 +43,10 @@ module.exports = (animeService, userAccountService, animeListService, genreServi
     }
     return new Promise(async (resolve, reject) => {
         try {
+            await userAccountService.dao.create()
             await animeService.dao.create()
             await animeListService.dao.create()
             await genreService.dao.create()
-            await userAccountService.dao.create()
             resolve()
         } catch (e) {
             if (e.code === "42P07") { // TABLE ALREADY EXISTS https://www.postgresql.org/docs/8.2/errcodes-appendix.html
