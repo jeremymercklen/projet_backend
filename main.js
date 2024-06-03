@@ -20,8 +20,11 @@ app.use(morgan('dev')); // toutes les requêtes HTTP dans le log du serveur
 app.use(cookieParser())
 
 var dsn = process.env.CONNECTION_STRING
+console.log(process.env.CONNECTION_STRING)
 if (dsn === undefined) {
+    console.log(process.env.CONNECTION_STRING)
     const { env } = process;
+    console.log(process)
     const read_base64_json = function(varName) {
         try {
             return JSON.parse(Buffer.from(env[varName], "base64").toString())
