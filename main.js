@@ -19,8 +19,8 @@ app.use(cors())
 app.use(morgan('dev')); // toutes les requêtes HTTP dans le log du serveur
 app.use(cookieParser())
 
-var dsn = process.env.CONNECTION_STRING
 console.log(process.env.CONNECTION_STRING)
+var dsn = process.env.CONNECTION_STRING
 if (dsn === undefined) {
     console.log(process.env.CONNECTION_STRING)
     const { env } = process;
