@@ -21,7 +21,7 @@ module.exports = (animeService, userAccountService, animeListService, genreServi
                 }
             })
             var animeFromAPI = await response.json()
-            if (!animeFromAPI.error) {
+            if (!animeFromAPI.error && animeFromAPI.num_episodes > 0) {
                 anime = new Anime(i, animeFromAPI.id, animeFromAPI.title, animeFromAPI.main_picture.large, animeFromAPI.synopsis, animeFromAPI.num_episodes)
                 var isInsert = await animeService.insert(anime)
                 console.log(anime)

@@ -1,19 +1,33 @@
 module.exports = (app, animeListService, jwt) => {
     app.get("/animelist/:idanime", jwt.validateJWT, async (req, res) => {
-        const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.has('idanime')) {
-        res.json(await animeListService.dao.getByIdAnimeAndUserId(queryParams.get('idanime'), req.user.id));
+        //const queryParams = new URLSearchParams(window.location.search);
+        if (req.params.idanime !== undefined) {
+            response = await animeListService.dao.getByIdAnimeAndUserId(req.params.idanime, req.user.id)
+            if (response.rowCount === 0) {
+                return res.status(404).end()
+            }
+            if (response.rows[0].userid)
+                response.rows[0].userid = undefined
+            res.json(response.rows[0])
         }
         else
-            res.json(await animeListService.dao.getAll(req.user))
+            res.json(await animeListService.dao.getAll(req.user.id))
+    })
+    app.get("/animelist", jwt.validateJWT, async (req, res) => {
+        //const queryParams = new URLSearchParams(window.location.search);
+        var animeList = (await animeListService.dao.getAllByUserId(req.user.id)).rows
+        for (const anime of animeList) {
+            anime.userid = undefined
+        }
+        res.json(animeList)
     })
     app.post("/animelist", jwt.validateJWT, (req, res) => {
         const anime = req.body
-        if (!animeListService.isValid(anime))  {
+        /*if (!animeListService.isValid(anime))  {
             res.status(400).end()
             return
-        }
-        anime.userid =  req.user.id
+        }*/
+        anime.userId =  req.user.id
         animeListService.dao.insert(anime)
             .then(_ => res.status(200).end())
             .catch(e => {
@@ -27,10 +41,10 @@ module.exports = (app, animeListService, jwt) => {
             if (anime === undefined) {
                 return res.status(404).end()
             }
-            if (anime.userid !== req.user.id) {
+            if ((anime.rows[0]).userid !== req.user.id) {
                 return res.status(403).end()
             }
-            animeListService.dao.delete(anime.id)
+            animeListService.dao.delete((anime.rows[0]).idanime, req.user.id)
                 .then(_ => res.status(200).end())
                 .catch(e => {
                     console.log(e)
@@ -49,18 +63,49 @@ module.exports = (app, animeListService, jwt) => {
         if (prevAnime === undefined) {
             return res.status(404).end()
         }
-        animeListService.dao.update(anime)
+        animeListService.dao.insert(anime)
             .then(_ => res.status(200).end())
             .catch(e => {
                 console.log(e)
                 res.status(500).end()
             })
-        app.patch("/animelist/:idanime", jwt.validateJWT, async (req, res) => {
-            const {state, nbOfEpisodesSeen} = req.body
-            if ((state === undefined) || (nbOfEpisodesSeen === undefined)) {
-                return res.status(400).end()
-            }
-
-        })
+    })
+    app.patch("/animelist/:idanime", jwt.validateJWT, async (req, res) => {
+        const {state, nbOfEpisodesSeen, rating, isFavorite} = req.body
+        if ((state !== undefined) && (nbOfEpisodesSeen !== undefined)) {
+            animeListService.dao.patchStateAndNbOfEpisodesSeen(state, nbOfEpisodesSeen, req.params.idanime, req.user.id)
+                .then(_ => res.status(200).end())
+                .catch(e => {
+                    console.log(e)
+                    res.status(500).end()
+                })
+        }
+        else if ((state === undefined) && (nbOfEpisodesSeen !== undefined)) {
+            animeListService.dao.patchNbOfEpisodesSeen(nbOfEpisodesSeen, req.params.idanime, req.user.id)
+                .then(_ => res.status(200).end())
+                .catch(e => {
+                    console.log(e)
+                    res.status(500).end()
+                })
+        }
+        else if ((rating !== undefined)) {
+            animeListService.dao.patchRating(nbOfEpisodesSeen, req.params.idanime, req.user.id)
+                .then(_ => res.status(200).end())
+                .catch(e => {
+                    console.log(e)
+                    res.status(500).end()
+                })
+        }
+        else if ((isFavorite !== undefined)) {
+            animeListService.dao.patchIsFavorite(isFavorite, req.params.idanime, req.user.id)
+                .then(_ => res.status(200).end())
+                .catch(e => {
+                    console.log(e)
+                    res.status(500).end()
+                })
+        }
+        else {
+            res.status(400).end()
+        }
     })
 }

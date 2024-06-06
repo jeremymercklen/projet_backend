@@ -33,4 +33,4 @@ relationships:
 
 web:
   commands:
-    start: "node main.js > log.txt"
+    start: "node main.js"
