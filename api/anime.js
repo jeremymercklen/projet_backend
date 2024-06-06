@@ -56,13 +56,13 @@ module.exports = (app, animeService, genreService, jwt) => {
                             var newGenre = new Genre(i, genreResponse.rows[0].id, genre.name)
                             await genreService.insert(newGenre)
                         }
-
                     }
                 } else
                     i--
                 id++
                 //await new Promise(r => setTimeout(r, 2000));
             }
+            res.status(200).end()
         } catch (e) {
             res.status(400).end()
         }
