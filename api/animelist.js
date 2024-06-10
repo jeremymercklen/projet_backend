@@ -89,7 +89,7 @@ module.exports = (app, animeListService, jwt) => {
                 })
         }
         else if ((rating !== undefined)) {
-            animeListService.dao.patchRating(nbOfEpisodesSeen, req.params.idanime, req.user.id)
+            animeListService.dao.patchRating(rating, req.params.idanime, req.user.id)
                 .then(_ => res.status(200).end())
                 .catch(e => {
                     console.log(e)
