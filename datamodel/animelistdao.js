@@ -9,7 +9,7 @@ module.exports = class AnimeListDAO extends BaseDAO {
         return super.getAll()
     }
     getAllByUserId(userId) {
-        return( this.db.query("SELECT * FROM animelist WHERE userid=$1 ORDER BY state", [userId]) )
+        return( this.db.query("SELECT * FROM animelist WHERE userid=$1 ORDER BY state desc, idanime", [userId]) )
     }
      create() {
          return( this.db.query("CREATE TABLE animelist(id SERIAL PRIMARY KEY, idanime INT REFERENCES Anime (id), state INT, rating INT, numberofepisodesseen INT, isfavorite BOOL, userid INT REFERENCES useraccount (id))"))
