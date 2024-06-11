@@ -38,7 +38,6 @@ module.exports = (animeService, userAccountService, animeListService, genreServi
             } else
                 i--
             id++
-            //await new Promise(r => setTimeout(r, 2000));
         }
     }
     return new Promise(async (resolve, reject) => {
@@ -51,12 +50,10 @@ module.exports = (animeService, userAccountService, animeListService, genreServi
         } catch (e) {
             if (e.code === "42P07") { // TABLE ALREADY EXISTS https://www.postgresql.org/docs/8.2/errcodes-appendix.html
                 resolve()
-                //inserted()
             } else {
-                inserted()
+                await inserted()
                 reject(e)
             }
-            return
         }
     })
 }
