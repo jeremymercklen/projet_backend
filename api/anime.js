@@ -9,7 +9,6 @@ module.exports = (app, animeService, genreService, jwt) => {
             if (req.query.genre !== undefined && req.query.id === undefined) {
                 response = await genreService.dao.getByGenre(req.query.genre)
                 var animes = []
-                var genres = []
                 var i = 0
                 for (const responseElement of response.rows) {
                     animes.push((await animeService.dao.getById(responseElement.idanime)).rows[0])
@@ -63,6 +62,23 @@ module.exports = (app, animeService, genreService, jwt) => {
                 //await new Promise(r => setTimeout(r, 2000));
             }
             res.status(200).end()
+        } catch (e) {
+            res.status(400).end()
+        }
+    })
+    app.get("/anime/search/:searchRequest", jwt.validateJWT, async (req, res) => {
+        try {
+            if (req.params.searchRequest !== undefined) {
+                const response = await animeService.dao.searchWithRequest(req.params.searchRequest.toLowerCase());
+                var animes = []
+                var i = 0
+                for (const responseElement of response.rows) {
+                    animes.push((await animeService.dao.getById(responseElement.idanime)).rows[0])
+                    animes[i].genres = (await genreService.dao.getByIdAnime(responseElement.idanime)).rows
+                    i++
+                }
+                res.json({infos: animes})
+            }
         } catch (e) {
             res.status(400).end()
         }

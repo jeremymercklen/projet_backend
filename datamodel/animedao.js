@@ -28,4 +28,8 @@ module.exports = class AnimeDAO extends BaseDAO {
         return this.db.query("UPDATE anime SET idapi=$2,name=$3,picture=$4,synopsis=$5,numberofepisodes=$6 WHERE id=$1",
             [anime.id, anime.idAPI, anime.name, anime.picture, anime.synopsis, anime.numberOfEpisodes])
     }
+    searchWithRequest(searchRequest) {
+        return this.db.query("SELECT * FROM anime WHERE LOWER(name) LIKE LOWER($1)",
+            [searchRequest])
+    }
 }
