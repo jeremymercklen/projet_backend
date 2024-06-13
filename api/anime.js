@@ -69,7 +69,7 @@ module.exports = (app, animeService, genreService, jwt) => {
     app.get("/anime/search/:searchRequest", jwt.validateJWT, async (req, res) => {
         try {
             if (req.params.searchRequest !== undefined) {
-                const response = await animeService.dao.searchWithRequest(req.params.searchRequest.toLowerCase());
+                const response = await animeService.dao.searchWithRequest(req.params.searchRequest);
                 var animes = []
                 var i = 0
                 for (const responseElement of response.rows) {
