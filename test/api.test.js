@@ -14,10 +14,10 @@ describe('API Tests', function() {
     before( (done) => {
         seedDatabase().then( async () => {
             console.log("Creating test user");
-            userAccountService.insert('user1', 'default').then( () => // TODO adapter à votre fonction insert()
+            userAccountService.insert('user1', 'default').then( () =>
                 chai.request(app)
-                    .post('/useraccount/authenticate') // TODO : remplacer par votre URL d'authentification
-                    .send({login: 'user1', password: 'default'}) // TODO : remplacer par les champs attendus par votre route
+                    .post('/useraccount/authenticate')
+                    .send({login: 'user1', password: 'default'})
                     .end((err, res) => {
                         res.should.have.status(200);
                         token = res.body.token;
@@ -39,12 +39,12 @@ describe('API Tests', function() {
     // Test avec un token JWT valide
     it('should allow access with valid token', (done) => {
         chai.request(app)
-            .get('/useraccount/refreshtoken') // TODO : remplacer par une de vos routes protégée par validateJWT
+            .get('/useraccount/refreshtoken')
             .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
                 res.should.have.status(200);
-                res.body.should.be.a('object'); // TODO : remplacer array par object si votre route retourne un objet
-                //res.body.should.have.lengthOf(0); // TODO remplacer par votre test
+                res.body.should.be.a('object');
+                //res.body.should.have.lengthOf(0);
                 done();
             });
     });
@@ -52,7 +52,7 @@ describe('API Tests', function() {
     // Test avec un token JWT non valide
     it('should deny access with invalid token', (done) => {
         chai.request(app)
-            .get('/animelist') // TODO : remplacer par une de vos routes protégée par validateJWT
+            .get('/animelist')
             .set('Authorization', 'Bearer wrongtoken')
             .end((err, res) => {
                 res.should.have.status(401);

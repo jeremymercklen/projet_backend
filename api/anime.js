@@ -1,4 +1,3 @@
-const AnimeAPI = require("../services/animeapi");
 const fetch = require("node-fetch");
 const Anime = require("../datamodel/anime");
 const Genre = require("../datamodel/genre");
@@ -8,7 +7,7 @@ module.exports = (app, animeService, genreService, jwt) => {
             var response
             if (req.query.genre !== undefined && req.query.id === undefined) {
                 response = await genreService.dao.getByGenre(req.query.genre)
-                var animes = []
+                var animes = [];
                 var i = 0
                 for (const responseElement of response.rows) {
                     animes.push((await animeService.dao.getById(responseElement.idanime)).rows[0])
@@ -19,7 +18,7 @@ module.exports = (app, animeService, genreService, jwt) => {
             }
             if (req.query.id !== undefined && req.query.genre === undefined) {
                 response = await animeService.dao.getById(parseInt(req.query.id))
-                anime = response.rows[0]
+                var anime = response.rows[0]
                 if (anime === undefined) {
                     return res.status(404).end()
                 }
@@ -28,6 +27,7 @@ module.exports = (app, animeService, genreService, jwt) => {
                 res.json({info: anime})
             }
         } catch (e) {
+            console.log(e)
             res.status(400).end()
         }
     })
@@ -44,7 +44,7 @@ module.exports = (app, animeService, genreService, jwt) => {
                 })
                 var animeFromAPI = await response.json()
                 if (!animeFromAPI.error && animeFromAPI.num_episodes > 0) {
-                    anime = new Anime(i, animeFromAPI.id, animeFromAPI.title, animeFromAPI.main_picture.large, animeFromAPI.synopsis, animeFromAPI.num_episodes)
+                    var anime = new Anime(i, animeFromAPI.id, animeFromAPI.title, animeFromAPI.main_picture.large, animeFromAPI.synopsis, animeFromAPI.num_episodes)
                     var isInsert = await animeService.insert(anime)
                     console.log(anime)
                     if (isInsert === undefined)
@@ -63,6 +63,7 @@ module.exports = (app, animeService, genreService, jwt) => {
             }
             res.status(200).end()
         } catch (e) {
+            console.log(e)
             res.status(400).end()
         }
     })
@@ -73,13 +74,18 @@ module.exports = (app, animeService, genreService, jwt) => {
                 var animes = []
                 var i = 0
                 for (const responseElement of response.rows) {
-                    animes.push((await animeService.dao.getById(responseElement.idanime)).rows[0])
-                    animes[i].genres = (await genreService.dao.getByIdAnime(responseElement.idanime)).rows
+                    animes.push(responseElement)
+                    animes[i].genres = (await genreService.dao.getByIdAnime(responseElement.idapi)).rows
                     i++
                 }
-                res.json({infos: animes})
+                if (animes.length !== 0) {
+                    res.json({infos: animes})
+                } else {
+                    res.status(404).end()
+                }
             }
         } catch (e) {
+            console.log(e)
             res.status(400).end()
         }
     })

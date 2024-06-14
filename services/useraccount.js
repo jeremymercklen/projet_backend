@@ -27,6 +27,4 @@ module.exports = class UserAccountService {
         }
         return null;
     }
-
-
 }

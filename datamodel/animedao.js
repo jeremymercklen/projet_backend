@@ -29,7 +29,7 @@ module.exports = class AnimeDAO extends BaseDAO {
             [anime.id, anime.idAPI, anime.name, anime.picture, anime.synopsis, anime.numberOfEpisodes])
     }
     searchWithRequest(searchRequest) {
-        return this.db.query(`SELECT * FROM anime WHERE LOWER(name) LIKE LOWER('%${1}%')`,
-            [searchRequest])
+        return this.db.query(`SELECT * FROM anime WHERE LOWER(name) LIKE LOWER($1)`,
+            ['%' + searchRequest + '%'])
     }
 }
