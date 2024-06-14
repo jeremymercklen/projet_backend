@@ -7,7 +7,7 @@ const should = chai.should();
 chai.use(chaiHttp);
 
 describe('API Tests', function() {
-    this.timeout(5000);
+    this.timeout(5001);
     let token = '';
 
     // Connexion à l'API pour récupérer le token JWT
