@@ -25,6 +25,7 @@ module.exports = (app, svc, jwt) => {
 
     app.post('/useraccount', async (req, res) => {
         const {login, password} = req.body
+        
         if ((login === undefined) || (password === undefined)) {
             console.log(req.body);
             return res.status(400).end()

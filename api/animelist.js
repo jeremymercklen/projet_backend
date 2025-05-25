@@ -1,4 +1,14 @@
 module.exports = (app, animeListService, jwt) => {
+    app.get("/animelist/most-viewed-genres", jwt.validateJWT, async (req, res) => {
+        try {
+            const userId = req.user.id; // Extraire l'ID utilisateur depuis le JWT
+            const mostViewedGenres = await animeListService.dao.getMostViewedGenres(userId);
+            res.json({ genres: mostViewedGenres.rows });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: "An error occurred while fetching the most viewed genres." });
+        }
+    })
     app.get("/animelist/:idanime", jwt.validateJWT, async (req, res) => {
         //const queryParams = new URLSearchParams(window.location.search);
         if (req.params.idanime !== undefined) {

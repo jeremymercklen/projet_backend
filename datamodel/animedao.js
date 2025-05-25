@@ -32,4 +32,5 @@ module.exports = class AnimeDAO extends BaseDAO {
         return this.db.query(`SELECT * FROM anime WHERE LOWER(name) LIKE LOWER($1)`,
             ['%' + searchRequest + '%'])
     }
+
 }

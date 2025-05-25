@@ -17,6 +17,6 @@ function fetchJSON(url, token) {
 }
 module.exports = class AnimeAPI {
     get(id) {
-        return fetchJSON(`${serviceBaseUrl}/${id}?fields=synopsis,num_episodes,genres`, '009447f056d90a6d9fc6c220a5b207a1')
+        return fetchJSON(`${serviceBaseUrl}/${id}?fields=synopsis,num_episodes,genres`, 'f039610d88e56707c0e9ea6d105f900f')
     }
 }

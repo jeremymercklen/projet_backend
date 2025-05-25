@@ -2,6 +2,7 @@ const chai = require('chai')
 const chaiHttp = require('chai-http');
 const { app, seedDatabase, userAccountService} = require("../main");   // TODO : remplacer par le nom de votre script principal
 const {expect} = require("chai");
+const AnimeList = require("../datamodel/animelist");
 const should = chai.should();
 
 chai.use(chaiHttp);
@@ -61,5 +62,4 @@ describe('API Tests', function() {
     });
 
     // TODO : remplacer les tests ci-dessous par vos propres tests
-
 });
