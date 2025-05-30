@@ -5,6 +5,7 @@ postgresql:
   # (https://docs.platform.sh/add-services/postgresql.html#supported-versions)
   # when choosing a version. If you specify a version number which is not available,
   # the CLI will return an error.
-  type: postgresql:16
+  type: postgresql:17
   # The disk attribute is the size of the persistent disk (in MB) allocated to the service.
   disk: 256
+
