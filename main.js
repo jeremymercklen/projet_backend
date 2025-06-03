@@ -22,9 +22,9 @@ app.use(cookieParser())
 
 console.log(process.env.CONNECTION_STRING)
 var dsn = process.env.CONNECTION_STRING
-
 const port = process.env.PORT || 3333;
 console.log(`Using database ${dsn}`)
+
 const db = new pg.Pool({connectionString: dsn})
 const animeService = new AnimeService(db)
 const userAccountService = new UserAccountService(db)

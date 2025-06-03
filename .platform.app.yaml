@@ -29,3 +29,7 @@ disk: 2048
 # side is in the form '<service name>:<endpoint name>'.
 relationships:
   postgresql: 'postgresql:postgresql'
+
+web:
+  commands:
+    start: "node main.js"
