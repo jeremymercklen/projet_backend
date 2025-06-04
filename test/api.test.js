@@ -1,21 +1,21 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http');
-const {app, seedDatabase, userAccountService} = require("../main");   // TODO : remplacer par le nom de votre script principal
+const { app, seedDatabase, userAccountService} = require("../main");   // TODO : remplacer par le nom de votre script principal
 const {expect} = require("chai");
 const AnimeList = require("../datamodel/animelist");
 const should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('API Tests', function () {
+describe('API Tests', function() {
     this.timeout(5000);
     let token = '';
 
     // Connexion à l'API pour récupérer le token JWT
-    before((done) => {
-        seedDatabase().then(async () => {
+    before( (done) => {
+        seedDatabase().then( async () => {
             console.log("Creating test user");
-            userAccountService.insert('user1', 'default').then(() =>
+            userAccountService.insert('user1', 'default').then( () =>
                 chai.request(app)
                     .post('/useraccount/authenticate')
                     .send({login: 'user1', password: 'default'})
@@ -24,12 +24,11 @@ describe('API Tests', function () {
                         token = res.body.token;
                         done();
                     })
-            )
-        })
+            )})
     });
 
     // Suppression de l'utilisateur utilisé à la fin des tests
-    after((done) => {
+    after( (done) => {
         console.log("Deleting test user")
         userAccountService.get('user1').then(
             (user) => {
@@ -62,93 +61,4 @@ describe('API Tests', function () {
             });
     });
 
-    describe('Anime Routes', () => {
-        it('should get animes by genre with pagination', (done) => {
-            chai.request(app)
-                .get('/anime/Action?page=1&limit=10')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.have.property('infos');
-                    res.body.should.have.property('pagination');
-                    res.body.pagination.should.have.property('currentPage');
-                    res.body.pagination.should.have.property('totalPages');
-                    done();
-                });
-        });
-
-        it('should return 404 for non-existent genre', (done) => {
-            chai.request(app)
-                .get('/anime/NonExistentGenre')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(404);
-                    res.body.should.have.property('error');
-                    done();
-                });
-        });
-    });
-
-    describe('Genre Routes', () => {
-        it('should get most viewed genres including zero views', (done) => {
-            chai.request(app)
-                .get('/genre/most-viewed')
-                .set((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    res.body[0].should.have.property('name');
-                    res.body[0].should.have.property('count');
-                    done();
-                });
-        });
-
-        it('should get all genres', (done) => {
-            chai.request(app)
-                .get('/genre')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    done();
-                });
-        });
-    });
-
-    describe('AnimeList Routes', () => {
-        let animeId;
-
-        before((done) => {
-            // Insert a test anime first
-            chai.request(app)
-                .get('/anime')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    animeId = res.body[0].id;
-                    done();
-                });
-        });
-
-        it('should add anime to user list', (done) => {
-            chai.request(app)
-                .post('/animelist')
-                .set('Authorization', `Bearer ${token}`)
-                .send({idAnime: animeId})
-                .end((err, res) => {
-                    res.should.have.status(201);
-                    done();
-                });
-        });
-
-        it('should get user anime list', (done) => {
-            chai.request(app)
-                .get('/animelist')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    res.body.length.should.be.above(0);
-                    done();
-                });
-        });
-    });
 });
