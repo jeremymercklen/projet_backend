@@ -33,4 +33,10 @@ module.exports = class AnimeDAO extends BaseDAO {
             ['%' + searchRequest + '%'])
     }
 
+    deleteByIdAPI(idAPI) {
+        return this.db.query("DELETE FROM anime WHERE idapi=$1", [idAPI])
+    }
+    deleteById(id) {
+        return this.db.query("DELETE FROM anime WHERE id=$1", [id])
+    }
 }

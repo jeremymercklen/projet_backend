@@ -1,3 +1,4 @@
+// services/genre.js
 const GenreDAO = require("../datamodel/genredao")
 
 module.exports = class GenreService {
@@ -38,5 +39,13 @@ module.exports = class GenreService {
             throw new Error("Anime ID is required");
         }
         return this.dao.getByIdAnime(animeId);
+    }
+
+    async delete(id) {
+        return this.dao.delete(id)
+    }
+
+    async updateById(id, genre) {
+        return this.dao.updateById(id, genre)
     }
 }

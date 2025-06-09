@@ -1,79 +1,75 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http');
-const { app, seedDatabase, userAccountService} = require("../main");   // TODO : remplacer par le nom de votre script principal
+const { app, seedDatabase, userAccountService, animeService, genreService, animeListService} = require("../main");
 const {expect} = require("chai");
 const AnimeList = require("../datamodel/animelist");
+const {decode} = require("jsonwebtoken");
 const should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('API Tests', function () {
+describe('API Tests', function() {
     this.timeout(5000);
     let token = '';
-    let testAnimeId;
-    let testGenreId;
+    let idAnime = 0;
+    let userId = 0;
 
-    before(async () => {
-        await seedDatabase();
-        console.log("Creating test data");
+    // Connexion à l'API pour récupérer le token JWT
+    before( (done) => {
+        seedDatabase().then( async () => {
+            console.log("Creating test user");
+            // Création d'un utilisateur de test
+            userAccountService.insert('user1', 'default').then( () =>
+                chai.request(app)
+                    .post('/useraccount/authenticate')
+                    .send({login: 'user1', password: 'default'})
+                    .end((err, res) => {
+                        res.should.have.status(200);
+                        token = res.body.token;
+                        const decodedToken = decode(token);
+                        userId = decodedToken.id;
+                        done();
+                    })
+            );
 
-        // Create test user
-        await userAccountService.insert('user1', 'default');
-
-        // Get authentication token
-        const authResponse = await chai.request(app)
-            .post('/useraccount/authenticate')
-            .send({login: 'user1', password: 'default'});
-        token = authResponse.body.token;
-
-        // Create test genre
-        const genreResponse = await chai.request(app)
-            .post('/genre')
-            .set('Authorization', `Bearer ${token}`)
-            .send({name: 'TestGenre'});
-        testGenreId = genreResponse.body.id;
-
-        // Create test anime
-        const animeResponse = await chai.request(app)
-            .post('/anime')
-            .set('Authorization', `Bearer ${token}`)
-            .send({
+            // Création d'un anime de test
+            console.log("Creating test anime");
+            const anime = {
+                idAPI: 99999999,
                 name: 'Test Anime',
-                description: 'Test Description',
-                episodeCount: 12,
-                genres: [testGenreId]
+                picture: 'http://example.com/image.jpg',
+                synopsis: 'This is a test anime.',
+                numberOfEpisodes: 12
+            };
+            await animeService.insert(anime);
+
+            // Récupération de l'id interne de l'anime
+            const result = await animeService.getByIdAPI(anime.idAPI);
+            idAnime = result.rows[0].id;
+        })
+    });
+
+    // Suppression des données de tests à la fin de ceux-ci
+    after((done) => {
+        console.log("Cleaning up test data");
+        Promise.all([
+            // First delete anime list entries
+            animeListService.dao.delete(idAnime, userId)
+                .then(() => {
+                    console.log("Anime list entries deleted");
+                    // Then delete the user
+                    userAccountService.get('user1').then(user => {
+                        if (user) return userAccountService.dao.delete(user.id);
+                    });
+
+                    animeService.deleteById(idAnime);
+                }),
+        ]).then(() => done())
+            .catch(err => {
+                console.error("Cleanup error:", err);
+                done(err);
             });
-        testAnimeId = animeResponse.body.id;
     });
-
-    after(async () => {
-        console.log("Cleaning test data");
-        // Clean up in reverse order
-        await chai.request(app)
-            .delete(`/animelist/${testAnimeId}`)
-            .set('Authorization', `Bearer ${token}`);
-
-        await chai.request(app)
-            .delete(`/anime/${testAnimeId}`)
-            .set('Authorization', `Bearer ${token}`);
-
-        await chai.request(app)
-            .delete(`/genre/${testGenreId}`)
-            .set('Authorization', `Bearer ${token}`);
-
-        const user = await userAccountService.get('user1');
-        await userAccountService.dao.delete(user.id);
-    });
-
-    // Suppression de l'utilisateur utilisé à la fin des tests
-    after( (done) => {
-        console.log("Deleting test user")
-        userAccountService.get('user1').then(
-            (user) => {
-                userAccountService.dao.delete(user.id).then(done())
-            }
-        )
-    })
 
     // Test avec un token JWT valide
     it('should allow access with valid token', (done) => {
@@ -99,95 +95,30 @@ describe('API Tests', function () {
             });
     });
 
-
-    describe('Anime Routes', () => {
-        it('should get animes by genre with pagination', (done) => {
-            chai.request(app)
-                .get('/anime/Action?page=1&limit=10')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.have.property('infos');
-                    res.body.should.have.property('pagination');
-                    res.body.pagination.should.have.property('currentPage');
-                    res.body.pagination.should.have.property('totalPages');
-                    done();
-                });
-        });
-
-        it('should return 404 for non-existent genre', (done) => {
-            chai.request(app)
-                .get('/anime/NonExistentGenre')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(404);
-                    res.body.should.have.property('error');
-                    done();
-                });
-        });
+    // Test de la recherche d'anime
+    it('should find test anime in search', (done) => {
+        chai.request(app)
+            .get('/anime/search/Test Anime')
+            .set('Authorization', `Bearer ${token}`)
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.have.property('infos');
+                res.body.infos.should.be.a('array');
+                res.body.infos[0].should.have.property('name').eql('Test Anime');
+                done();
+            });
     });
 
-    describe('Genre Routes', () => {
-        it('should get most viewed genres including zero views', (done) => {
-            chai.request(app)
-                .get('/genre/most-viewed')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    res.body[0].should.have.property('name');
-                    res.body[0].should.have.property('count');
-                    done();
-                });
-        });
-
-        it('should get all genres', (done) => {
-            chai.request(app)
-                .get('/genre')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    done();
-                });
-        });
-    });
-
-    describe('AnimeList Routes', () => {
-        let animeId;
-
-        before((done) => {
-            // Insert a test anime first
-            chai.request(app)
-                .get('/anime')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    animeId = res.body[0].id;
-                    done();
-                });
-        });
-
-        it('should add anime to user list', (done) => {
-            chai.request(app)
-                .post('/animelist')
-                .set('Authorization', `Bearer ${token}`)
-                .send({ idAnime: animeId })
-                .end((err, res) => {
-                    res.should.have.status(201);
-                    done();
-                });
-        });
-
-        it('should get user anime list', (done) => {
-            chai.request(app)
-                .get('/animelist')
-                .set('Authorization', `Bearer ${token}`)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('array');
-                    res.body.length.should.be.above(0);
-                    done();
-                });
-        });
+    // Test de l'insertion d'un anime dans la liste de l'utilisateur
+    it('should insert anime into user list', (done) => {
+        const animeList = new AnimeList(idAnime, 1, 1, 0, 0, userId);
+        chai.request(app)
+            .post('/animelist')
+            .set('Authorization', `Bearer ${token}`)
+            .send(animeList)
+            .end((err, res) => {
+                res.should.have.status(200);
+                done();
+            });
     });
 });

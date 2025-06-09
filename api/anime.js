@@ -64,7 +64,8 @@ module.exports = (app, animeService, genreService, animeGenreService, jwt) => {
     app.get("/anime/fill/:startId", jwt.validateJWT, async (req, res) => {
         try {
             var id = parseInt(req.params.startId);
-            for (var i = 0; i < 50; i++) {
+            const count = parseInt(req.query.count) || 50;
+            for (var i = 0; i < count; i++) {
                 const response = await fetch(`https://api.myanimelist.net/v2/anime/${id}?fields=synopsis,num_episodes,genres`, {
                     method: 'GET',
                     headers: {
@@ -82,11 +83,9 @@ module.exports = (app, animeService, genreService, animeGenreService, jwt) => {
                     } else {
                         var animeRes = await animeService.getByIdAPI(anime.idAPI);
                         for (const genre of animeFromAPI.genres) {
-                            // Check if the genre already exists
                             const existingGenre = await genreService.getByName(genre.name);
                             let genreId;
                             if (!existingGenre.rowCount) {
-                                // Insert the new genre if it doesn't exist
                                 var newGenre = new Genre(genre.name);
                                 const insertedGenre = await genreService.insert(newGenre);
                                 genreId = insertedGenre.rows[0].id;
@@ -94,15 +93,13 @@ module.exports = (app, animeService, genreService, animeGenreService, jwt) => {
                                 genreId = existingGenre.rows[0].id;
                             }
 
-                            // Insert into animeGenre table
                             const newAnimeGenre = new AnimeGenre(animeRes.rows[0].id, genreId);
                             await animeGenreService.insert(newAnimeGenre);
                         }
                     }
-                } else {
-                    i--;
+                    id++;
                 }
-                id++;
+                // If the anime is invalid or has an error, we don't increment i to retry with the same ID
             }
             res.status(200).end();
         } catch (e) {
