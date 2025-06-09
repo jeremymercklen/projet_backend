@@ -100,6 +100,9 @@ module.exports = (app, animeListService, jwt) => {
                 })
         }
         else if ((rating !== undefined)) {
+            if (rating < 0 || rating > 11) {
+                return res.status(400).end()
+            }
             animeListService.dao.patchRating(rating, req.params.idanime, req.user.id)
                 .then(() => res.status(200).end())
                 .catch(e => {

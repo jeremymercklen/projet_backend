@@ -43,4 +43,4 @@ if (require.main === module) {
         )
     )
 }
-module.exports = { app, seedDatabase, userAccountService, animeService, genreService, animeListService }
+module.exports = { app, seedDatabase, userAccountService, animeService, genreService, animeListService, animeGenreService }
